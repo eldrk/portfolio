@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="edu.iot.common.dao.ResidenceDao">
+	<!-- where절에 부등호가 없으면 <![CDATA[]>는 생략해도 된다. -->
+	
+	<select id="count" resultType="int">
+	<![CDATA[
+		SELECT count(*) FROM residence
+	]]></select>
+
+	<select id="getList" resultType="Residence"><![CDATA[
+		select * from residence
+	]]></select>
+	
+	<select id="getPage" parameterType="map" resultType="Residence"><![CDATA[
+		SELECT residence_id, region, address, type, name, rooms
+		FROM(	
+			select row_number() over (order by residence_id) as seq,
+				 residence_id, region, address, type, name, rooms
+			from residence
+		)
+		where seq between #{start} and #{end}
+		order by residence_id
+	]]></select>
+	
+	<select id="findById" parameterType="long" resultType="Residence"><![CDATA[
+		select * from residence
+		where residence_id=#{residenceId}
+	]]></select>
+	
+
+	<insert id="insert" parameterType="Residence">
+	<![CDATA[
+		insert into residence
+			(residence_id, region, type, name, address, rooms, phone_number)
+		values(residence_SEQ.NEXTVAL, #{region}, #{type},#{name},#{address},#{rooms},#{phoneNumber})
+	]]>
+	</insert>
+
+	<update id="increaseReadCnt" parameterType="long"><![CDATA[
+		update board set
+			read_cnt = read_cnt+1
+		where board_id=#{boardId}
+	]]></update>
+
+	
+	<update id="update" parameterType="Board">
+		UPDATE board SET
+		title=#{title},
+		content=#{content},
+		update_date=sysdate
+		WHERE board_id=#{boardId} and password=#{password}
+	</update>
+
+	<delete id="delete" parameterType="long">
+		DELETE FROM board
+		WHERE
+		board_id=#{boardId}
+	</delete>
+	
+	<select id="random" parameterType="int" resultType="Residence"><![CDATA[
+		select * from (
+			select * from residence
+			order by DBMS_RANDOM.RANDOM
+		)where rownum <=#{num}
+	]]></select>
+	
+	<select id="search" parameterType="Search" resultType="Residence"><![CDATA[
+		select * from residence
+		where type like #{category}
+	]]></select>
+
+</mapper>
+

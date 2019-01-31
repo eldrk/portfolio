@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="edu.iot.common.dao.TourDao">
+	<!-- where절에 부등호가 없으면 <![CDATA[]>는 생략해도 된다. -->
+	
+	<select id="count" resultType="int">
+	<![CDATA[
+		SELECT count(*) FROM tour
+	]]></select>
+
+	<select id="getList" resultType="Tour"><![CDATA[
+		select * from tour
+	]]></select>
+	
+	<select id="getPage" parameterType="map" resultType="Tour"><![CDATA[
+		SELECT tour_id,  name, lgtype, mdtype, smtype, region, location, address
+		FROM(	
+			select row_number() over (order by tour_id) as seq,
+				 tour_id,  name, lgtype, mdtype, smtype, region, location, address
+			from tour
+		)
+		where seq between #{start} and #{end}
+		order by tour_id
+	]]></select>
+	
+	<select id="findById" parameterType="long" resultType="Tour"><![CDATA[
+		select * from tour
+		where tour_id=#{tourId}
+	]]></select>
+	
+
+	<insert id="insert" parameterType="Tour">
+	<![CDATA[
+		insert into tour
+			(tour_id, name, lgtype, mdtype, smtype, region, location, address)
+		values(tour_SEQ.NEXTVAL, #{name}, #{lgType}, #{mdType}, #{smType},#{region},#{location},#{address})
+	]]>
+	</insert>
+
+	<update id="increaseReadCnt" parameterType="long"><![CDATA[
+		update board set
+			read_cnt = read_cnt+1
+		where board_id=#{boardId}
+	]]></update>
+
+	
+	<update id="update" parameterType="Board">
+		UPDATE board SET
+		title=#{title},
+		content=#{content},
+		update_date=sysdate
+		WHERE board_id=#{boardId} and password=#{password}
+	</update>
+
+	<delete id="delete" parameterType="long">
+		DELETE FROM board
+		WHERE
+		board_id=#{boardId}
+	</delete>
+	
+	<select id="random" parameterType="int" resultType="Tour"><![CDATA[
+		select * from (
+			select * from tour
+			order by DBMS_RANDOM.RANDOM
+		)where rownum <=#{num}
+	]]></select>
+	
+	<select id="search" parameterType="Search" resultType="Tour"><![CDATA[
+		select * from tour
+		where smtype like #{smType}
+	]]></select>
+
+
+</mapper>
+
